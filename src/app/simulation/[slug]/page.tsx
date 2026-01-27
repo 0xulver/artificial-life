@@ -12,8 +12,9 @@ interface SimulationPageProps {
 
 export default function SimulationPage({ params }: SimulationPageProps) {
   const router = useRouter();
-  const { slug } = use(params);
-  const entry = getSimulationById(slug);
+  const { slug: initialSlug } = use(params);
+  const [currentSlug, setCurrentSlug] = useState(initialSlug);
+  const entry = getSimulationById(currentSlug);
   const [key, setKey] = useState(0);
   const [, setTick] = useState(0);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -24,6 +25,21 @@ export default function SimulationPage({ params }: SimulationPageProps) {
     if (!entry) return null;
     return entry.factory();
   }, [entry, key]);
+
+  useEffect(() => {
+    setCurrentSlug(initialSlug);
+  }, [initialSlug]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const match = window.location.pathname.match(/\/simulation\/([^/]+)/);
+      if (match) {
+        setCurrentSlug(match[1]);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const hasMultipleSimulations = simulationRegistry.length > 1;
 
@@ -63,12 +79,9 @@ export default function SimulationPage({ params }: SimulationPageProps) {
   useEffect(() => {
     const shouldBeFullscreen = sessionStorage.getItem('simulation-fullscreen') === 'true';
     if (shouldBeFullscreen && containerRef.current && !document.fullscreenElement) {
-      const timer = setTimeout(() => {
-        containerRef.current?.requestFullscreen().catch(() => {});
-      }, 100);
-      return () => clearTimeout(timer);
+      containerRef.current.requestFullscreen().catch(() => {});
     }
-  }, [slug]);
+  }, []);
 
   const toggleFullscreen = useCallback(() => {
     if (!containerRef.current) return;
@@ -116,7 +129,8 @@ export default function SimulationPage({ params }: SimulationPageProps) {
 
   const handleSimulationChange = (id: string) => {
     setDropdownOpen(false);
-    router.push(`/simulation/${id}`);
+    window.history.pushState(null, '', `/simulation/${id}`);
+    setCurrentSlug(id);
   };
 
   return (
@@ -154,11 +168,11 @@ export default function SimulationPage({ params }: SimulationPageProps) {
                       key={sim.id}
                       onClick={() => handleSimulationChange(sim.id)}
                       className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-white/10 ${
-                        sim.id === slug ? 'bg-white/10 text-white' : 'text-white/70'
+                        sim.id === currentSlug ? 'bg-white/10 text-white' : 'text-white/70'
                       }`}
                     >
                       <span className="flex-1">{sim.name}</span>
-                      {sim.id === slug && (
+                      {sim.id === currentSlug && (
                         <span className="h-2 w-2 rounded-full bg-green-400" />
                       )}
                     </button>
