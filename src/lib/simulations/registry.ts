@@ -15,6 +15,10 @@ import { createElementaryCA } from './elementary-ca';
 import { createSandpile } from './sandpile';
 import { createSchelling } from './schelling';
 import { createFirefly } from './firefly';
+import { createDLA } from './dla';
+import { createLSystem } from './lsystem';
+import { createBiomorphs } from './biomorphs';
+import { createDaisyworld } from './daisyworld';
 
 export const simulationRegistry: SimulationRegistryEntry[] = [
   {
@@ -160,6 +164,38 @@ export const simulationRegistry: SimulationRegistryEntry[] = [
     category: 'agent-based',
     complexity: 'easy',
     factory: createFirefly,
+  },
+  {
+    id: 'dla',
+    name: 'Diffusion-Limited Aggregation',
+    description: 'Fractal dendrite growth from random walking particles',
+    category: 'other',
+    complexity: 'easy',
+    factory: createDLA,
+  },
+  {
+    id: 'lsystem',
+    name: 'L-System',
+    description: 'Procedural plant and fractal generation with turtle graphics',
+    category: 'other',
+    complexity: 'easy',
+    factory: createLSystem,
+  },
+  {
+    id: 'biomorphs',
+    name: 'Biomorphs',
+    description: 'Interactive evolution through aesthetic selection',
+    category: 'evolutionary',
+    complexity: 'easy',
+    factory: createBiomorphs,
+  },
+  {
+    id: 'daisyworld',
+    name: 'Daisyworld',
+    description: 'Planetary temperature regulation through life (Gaia hypothesis)',
+    category: 'evolutionary',
+    complexity: 'medium',
+    factory: createDaisyworld,
   },
 ];
 
