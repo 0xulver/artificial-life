@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { SimulationCanvas } from '@/components/SimulationCanvas';
 import { simulationRegistry, getSimulationById } from '@/lib/simulations/registry';
@@ -17,6 +17,8 @@ export default function SimulationPage({ params }: SimulationPageProps) {
   const [key, setKey] = useState(0);
   const [, setTick] = useState(0);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const simulation = useMemo(() => {
     if (!entry) return null;
@@ -47,6 +49,26 @@ export default function SimulationPage({ params }: SimulationPageProps) {
       return () => document.removeEventListener('click', handleClickOutside);
     }
   }, [dropdownOpen]);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    if (!containerRef.current) return;
+    
+    if (!document.fullscreenElement) {
+      containerRef.current.requestFullscreen().catch((err) => {
+        console.error('Failed to enter fullscreen:', err);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  }, []);
 
   if (!entry) {
     return (
@@ -84,7 +106,7 @@ export default function SimulationPage({ params }: SimulationPageProps) {
   };
 
   return (
-    <div className="group relative h-screen w-screen overflow-hidden bg-black text-white">
+    <div ref={containerRef} className="group relative h-screen w-screen overflow-hidden bg-black text-white">
       <div className="absolute inset-0 z-0">
         <SimulationCanvas key={key} simulation={simulation} fullscreen />
       </div>
@@ -182,6 +204,47 @@ export default function SimulationPage({ params }: SimulationPageProps) {
                 <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12" />
                 <path d="M3 3v9h9" />
               </svg>
+            </button>
+            <button
+              onClick={toggleFullscreen}
+              className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 transition-colors hover:bg-white/20"
+              title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+            >
+              {isFullscreen ? (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M8 3v3a2 2 0 0 1-2 2H3" />
+                  <path d="M21 8h-3a2 2 0 0 1-2-2V3" />
+                  <path d="M3 16h3a2 2 0 0 1 2 2v3" />
+                  <path d="M16 21v-3a2 2 0 0 1 2-2h3" />
+                </svg>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M8 3H5a2 2 0 0 0-2 2v3" />
+                  <path d="M21 8V5a2 2 0 0 0-2-2h-3" />
+                  <path d="M3 16v3a2 2 0 0 0 2 2h3" />
+                  <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
+                </svg>
+              )}
             </button>
           </div>
         </div>
