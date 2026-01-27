@@ -266,7 +266,7 @@ export function createSugarscape(customConfig?: Partial<SimulationConfig>): Simu
 
       ctx.fillStyle = '#fff';
       ctx.font = '14px monospace';
-      ctx.fillText(`Agents: ${agents.length}  Gen: ${state.generation}`, 10, 20);
+      ctx.fillText(`Agents: ${agents.length}  Gen: ${state.generation}`, 10, 60);
     },
 
     start(): void {

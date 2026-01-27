@@ -276,7 +276,7 @@ export function createPredatorPrey(customConfig?: Partial<SimulationConfig>): Si
       
       ctx.fillStyle = '#fff';
       ctx.font = '14px monospace';
-      ctx.fillText(`Prey: ${prey.length}  Predators: ${predators.length}`, 10, 20);
+      ctx.fillText(`Prey: ${prey.length}  Predators: ${predators.length}`, 10, 60);
     },
 
     start(): void {

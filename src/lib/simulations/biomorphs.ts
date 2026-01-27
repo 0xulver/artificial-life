@@ -212,8 +212,14 @@ export function createBiomorphs(customConfig?: Partial<SimulationConfig>): Simul
     const x = event.clientX - rectBounds.left;
     const y = event.clientY - rectBounds.top;
 
-    const col = Math.floor(x / cellSize);
-    const row = Math.floor(y / cellSize);
+    const gridWidth = gridSize * cellSize;
+    const gridHeight = gridSize * cellSize;
+    const offsetX = (config.width - gridWidth) / 2;
+    const offsetY = (config.height - gridHeight) / 2;
+
+    const col = Math.floor((x - offsetX) / cellSize);
+    const row = Math.floor((y - offsetY) / cellSize);
+    if (col < 0 || col >= gridSize || row < 0 || row >= gridSize) return;
     const cellIndex = row * gridSize + col;
 
     if (cellIndex === 4) {
@@ -254,15 +260,18 @@ export function createBiomorphs(customConfig?: Partial<SimulationConfig>): Simul
     },
 
     render(ctx: CanvasRenderingContext2D): void {
-      // Clear canvas with dark background
       ctx.fillStyle = '#111';
       ctx.fillRect(0, 0, config.width, config.height);
 
-      // Render 3x3 grid
+      const gridWidth = gridSize * cellSize;
+      const gridHeight = gridSize * cellSize;
+      const offsetX = (config.width - gridWidth) / 2;
+      const offsetY = (config.height - gridHeight) / 2;
+
       for (let row = 0; row < gridSize; row++) {
         for (let col = 0; col < gridSize; col++) {
-          const cellX = col * cellSize;
-          const cellY = row * cellSize;
+          const cellX = offsetX + col * cellSize;
+          const cellY = offsetY + row * cellSize;
           const cellIndex = row * gridSize + col;
 
           const isParent = cellIndex === 4;

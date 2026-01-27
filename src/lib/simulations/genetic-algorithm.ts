@@ -274,11 +274,15 @@ export function createGeneticAlgorithm(customConfig?: Partial<SimulationConfig>)
     },
 
     render(ctx: CanvasRenderingContext2D): void {
-      // Clear canvas
       ctx.fillStyle = '#111';
       ctx.fillRect(0, 0, config.width, config.height);
 
-      // Draw separator line
+      const panelSize = 300;
+      const halfWidth = config.width / 2;
+      const leftPanelX = (halfWidth - panelSize) / 2;
+      const rightPanelX = halfWidth + (halfWidth - panelSize) / 2;
+      const panelY = (config.height - panelSize) / 2;
+
       ctx.strokeStyle = '#333';
       ctx.lineWidth = 2;
       ctx.beginPath();
@@ -286,38 +290,39 @@ export function createGeneticAlgorithm(customConfig?: Partial<SimulationConfig>)
       ctx.lineTo(config.width / 2, config.height);
       ctx.stroke();
 
-      // Left side: Target
       ctx.save();
       ctx.fillStyle = '#fff';
-      ctx.fillRect(20, 20, 360, 360);
-      renderCircles(ctx, targetCircles, 380, 380);
-      ctx.translate(20, 20);
+      ctx.fillRect(leftPanelX, panelY, panelSize, panelSize);
+      ctx.beginPath();
+      ctx.rect(leftPanelX, panelY, panelSize, panelSize);
+      ctx.clip();
+      ctx.translate(leftPanelX, panelY);
+      ctx.scale(panelSize / 400, panelSize / 400);
+      renderCircles(ctx, targetCircles, 400, 400);
       ctx.restore();
 
-      // Right side: Best individual
       ctx.save();
-      ctx.translate(config.width / 2, 0);
       ctx.fillStyle = '#fff';
-      ctx.fillRect(20, 20, 360, 360);
-      renderCircles(ctx, bestGenome, 380, 380);
+      ctx.fillRect(rightPanelX, panelY, panelSize, panelSize);
+      ctx.beginPath();
+      ctx.rect(rightPanelX, panelY, panelSize, panelSize);
+      ctx.clip();
+      ctx.translate(rightPanelX, panelY);
+      ctx.scale(panelSize / 400, panelSize / 400);
+      renderCircles(ctx, bestGenome, 400, 400);
       ctx.restore();
 
-      // Labels
       ctx.fillStyle = '#eee';
-      ctx.font = '16px monospace';
-      ctx.fillText('TARGET', 150, 50);
-      ctx.fillText(`Generation: ${state.generation}`, config.width / 2 + 100, 50);
-
-      // Fitness score
       ctx.font = '14px monospace';
-      const fitnessPercent = (bestFitness * 100).toFixed(2);
-      ctx.fillText(`Fitness: ${fitnessPercent}%`, config.width / 2 + 100, 75);
+      ctx.textAlign = 'center';
+      ctx.fillText('TARGET', leftPanelX + panelSize / 2, panelY - 15);
+      ctx.fillText(`Gen: ${state.generation} | Fitness: ${(bestFitness * 100).toFixed(1)}%`, rightPanelX + panelSize / 2, panelY - 15);
 
-      // Instructions
-      ctx.fillStyle = '#888';
-      ctx.font = '12px monospace';
-      ctx.fillText('← Target pattern', 130, config.height - 30);
-      ctx.fillText('Best individual →', config.width / 2 + 110, config.height - 30);
+      ctx.fillStyle = '#666';
+      ctx.font = '11px monospace';
+      ctx.fillText('← Target pattern', leftPanelX + panelSize / 2, panelY + panelSize + 20);
+      ctx.fillText('Best individual →', rightPanelX + panelSize / 2, panelY + panelSize + 20);
+      ctx.textAlign = 'left';
     },
 
     start(): void {
