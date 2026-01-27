@@ -9,14 +9,13 @@ const DEFAULT_CONFIG: SimulationConfig = {
   targetFPS: 10,
 };
 
-const CELL_SIZE = 8;
+const CELL_SIZE = 6;
 
 export function createGameOfLife(customConfig?: Partial<SimulationConfig>): Simulation {
   const config: SimulationConfig = { ...DEFAULT_CONFIG, ...customConfig };
   
-  const cols = Math.floor(config.width / CELL_SIZE);
-  const rows = Math.floor(config.height / CELL_SIZE);
-  
+  let cols = 0;
+  let rows = 0;
   let grid: boolean[][] = [];
   let nextGrid: boolean[][] = [];
   
@@ -54,6 +53,9 @@ export function createGameOfLife(customConfig?: Partial<SimulationConfig>): Simu
     state,
 
     init(_ctx: CanvasRenderingContext2D): void {
+      cols = Math.floor(config.width / CELL_SIZE);
+      rows = Math.floor(config.height / CELL_SIZE);
+      
       grid = createEmptyGrid();
       nextGrid = createEmptyGrid();
       randomizeGrid();
