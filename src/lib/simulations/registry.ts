@@ -19,6 +19,10 @@ import { createDLA } from './dla';
 import { createLSystem } from './lsystem';
 import { createBiomorphs } from './biomorphs';
 import { createDaisyworld } from './daisyworld';
+import { createPhysarum } from './physarum';
+import { createSugarscape } from './sugarscape';
+import { createLangtonsLoops } from './langtons-loops';
+import { createGeneticAlgorithm } from './genetic-algorithm';
 
 export const simulationRegistry: SimulationRegistryEntry[] = [
   {
@@ -196,6 +200,38 @@ export const simulationRegistry: SimulationRegistryEntry[] = [
     category: 'evolutionary',
     complexity: 'medium',
     factory: createDaisyworld,
+  },
+  {
+    id: 'physarum',
+    name: 'Physarum',
+    description: 'Slime mold network formation through trail following',
+    category: 'agent-based',
+    complexity: 'medium',
+    factory: createPhysarum,
+  },
+  {
+    id: 'sugarscape',
+    name: 'Sugarscape',
+    description: 'Artificial society with foraging agents',
+    category: 'agent-based',
+    complexity: 'medium',
+    factory: createSugarscape,
+  },
+  {
+    id: 'langtons-loops',
+    name: "Langton's Loops",
+    description: 'Self-replicating cellular automaton',
+    category: 'cellular-automata',
+    complexity: 'medium',
+    factory: createLangtonsLoops,
+  },
+  {
+    id: 'genetic-algorithm',
+    name: 'Genetic Algorithm',
+    description: 'Evolutionary optimization visualization',
+    category: 'evolutionary',
+    complexity: 'medium',
+    factory: createGeneticAlgorithm,
   },
 ];
 
