@@ -288,14 +288,13 @@ export function createDaisyworld(customConfig?: Partial<SimulationConfig>): Simu
         }
       }
 
-      // Display average temperature and luminosity info (positioned below dropdown)
       ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-      ctx.fillRect(10, 55, 220, 70);
+      ctx.fillRect(10, 90, 220, 70);
       ctx.fillStyle = '#fff';
       ctx.font = '14px monospace';
-      ctx.fillText(`Avg Temperature: ${averageTemperature.toFixed(1)}°C`, 20, 80);
-      ctx.fillText(`Solar Luminosity: ${solarLuminosity.toFixed(3)}`, 20, 100);
-      ctx.fillText(`Generation: ${state.generation}`, 20, 120);
+      ctx.fillText(`Avg Temperature: ${averageTemperature.toFixed(1)}°C`, 20, 115);
+      ctx.fillText(`Solar Luminosity: ${solarLuminosity.toFixed(3)}`, 20, 135);
+      ctx.fillText(`Generation: ${state.generation}`, 20, 155);
     },
 
     start(): void {
