@@ -1,5 +1,6 @@
 import { SimulationRegistryEntry } from '@/lib/engine/types';
 import { createGameOfLife } from './game-of-life';
+import { createLenia } from './lenia';
 
 export const simulationRegistry: SimulationRegistryEntry[] = [
   {
@@ -9,6 +10,14 @@ export const simulationRegistry: SimulationRegistryEntry[] = [
     category: 'cellular-automata',
     complexity: 'easy',
     factory: createGameOfLife,
+  },
+  {
+    id: 'lenia',
+    name: 'Lenia',
+    description: 'Continuous cellular automaton with lifelike emergent creatures',
+    category: 'cellular-automata',
+    complexity: 'medium',
+    factory: createLenia,
   },
 ];
 
