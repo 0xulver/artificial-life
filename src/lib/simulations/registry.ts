@@ -4,7 +4,6 @@ import { createLenia } from './lenia';
 import { createBoids } from './boids';
 import { createLangtonsAnt } from './langtons-ant';
 import { createBriansBrain } from './brians-brain';
-import { createRule110 } from './rule-110';
 import { createHighLife, createSeeds, createDayNight } from './life-like';
 import { createParticleLife } from './particle-life';
 import { createWireworld } from './wireworld';
@@ -57,14 +56,6 @@ export const simulationRegistry: SimulationRegistryEntry[] = [
     category: 'cellular-automata',
     complexity: 'easy',
     factory: createBriansBrain,
-  },
-  {
-    id: 'rule-110',
-    name: 'Rule 110',
-    description: 'Turing-complete 1D cellular automaton creating complex patterns over time',
-    category: 'cellular-automata',
-    complexity: 'easy',
-    factory: createRule110,
   },
   {
     id: 'highlife',

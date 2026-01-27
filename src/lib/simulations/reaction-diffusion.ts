@@ -26,6 +26,8 @@ export function createReactionDiffusion(customConfig?: Partial<SimulationConfig>
   let nextU: Float32Array = new Float32Array(0);
   let nextV: Float32Array = new Float32Array(0);
   let imageData: ImageData | null = null;
+  let offscreenCanvas: OffscreenCanvas | null = null;
+  let offscreenCtx: OffscreenCanvasRenderingContext2D | null = null;
   
   const state: SimulationState = {
     running: false,
@@ -116,7 +118,11 @@ export function createReactionDiffusion(customConfig?: Partial<SimulationConfig>
       cols = Math.floor(config.width / SCALE);
       rows = Math.floor(config.height / SCALE);
       
-      imageData = ctx.createImageData(cols, rows);
+      offscreenCanvas = new OffscreenCanvas(cols, rows);
+      offscreenCtx = offscreenCanvas.getContext('2d');
+      if (offscreenCtx) {
+        imageData = offscreenCtx.createImageData(cols, rows);
+      }
       
       initializeGrids();
       state.generation = 0;
@@ -137,7 +143,7 @@ export function createReactionDiffusion(customConfig?: Partial<SimulationConfig>
     },
 
     render(ctx: CanvasRenderingContext2D): void {
-      if (!imageData) return;
+      if (!imageData || !offscreenCtx || !offscreenCanvas) return;
       
       const data = imageData.data;
       
@@ -159,16 +165,14 @@ export function createReactionDiffusion(customConfig?: Partial<SimulationConfig>
         }
       }
       
-      ctx.putImageData(imageData, 0, 0);
+      offscreenCtx.putImageData(imageData, 0, 0);
       
-      if (SCALE > 1) {
-        ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(
-          ctx.canvas,
-          0, 0, cols, rows,
-          0, 0, config.width, config.height
-        );
-      }
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(
+        offscreenCanvas,
+        0, 0, cols, rows,
+        0, 0, config.width, config.height
+      );
     },
 
     start(): void {
@@ -191,6 +195,8 @@ export function createReactionDiffusion(customConfig?: Partial<SimulationConfig>
       nextU = new Float32Array(0);
       nextV = new Float32Array(0);
       imageData = null;
+      offscreenCanvas = null;
+      offscreenCtx = null;
     },
   };
 }

@@ -11,6 +11,7 @@ const DEFAULT_CONFIG: SimulationConfig = {
 
 const CELL_SIZE = 6;
 const TOLERANCE = 0.3;
+const MAX_MOVES_PER_FRAME = 50;
 
 const EMPTY = 0;
 const TYPE_A = 1;
@@ -131,9 +132,11 @@ export function createSchelling(customConfig?: Partial<SimulationConfig>): Simul
       }
 
       const shuffledUnhappy = shuffleArray(unhappyAgents);
+      const movesToMake = Math.min(shuffledUnhappy.length, MAX_MOVES_PER_FRAME);
       let moves = 0;
 
-      for (const agent of shuffledUnhappy) {
+      for (let i = 0; i < movesToMake; i++) {
+        const agent = shuffledUnhappy[i];
         if (emptyCells.length === 0) break;
 
         const emptyIndex = Math.floor(Math.random() * emptyCells.length);

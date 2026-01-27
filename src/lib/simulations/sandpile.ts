@@ -31,6 +31,18 @@ export function createSandpile(customConfig?: Partial<SimulationConfig>): Simula
 
   function initializeGrid(): void {
     grid = createEmptyGrid();
+    
+    // Add initial sand pile in center to immediately show activity
+    const centerRow = Math.floor(rows / 2);
+    const centerCol = Math.floor(cols / 2);
+    grid[centerRow][centerCol] = 100;
+    
+    // Add some random seeds across the grid
+    for (let i = 0; i < 50; i++) {
+      const row = Math.floor(Math.random() * rows);
+      const col = Math.floor(Math.random() * cols);
+      grid[row][col] += Math.floor(Math.random() * 8) + 4;
+    }
   }
 
   function getColor(height: number): string {
