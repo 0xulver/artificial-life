@@ -273,10 +273,13 @@ export function createPredatorPrey(customConfig?: Partial<SimulationConfig>): Si
         ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
         ctx.fill();
       }
-      
-      ctx.fillStyle = '#fff';
-      ctx.font = '14px monospace';
-      ctx.fillText(`Prey: ${prey.length}  Predators: ${predators.length}`, 10, 90);
+    },
+
+    getStats() {
+      return [
+        { label: 'Prey', value: prey.length },
+        { label: 'Predators', value: predators.length },
+      ];
     },
 
     start(): void {

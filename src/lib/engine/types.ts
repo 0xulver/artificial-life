@@ -26,50 +26,24 @@ export interface SimulationState {
   elapsedTime: number;
 }
 
+export interface SimulationStat {
+  label: string;
+  value: string | number;
+}
+
 export interface Simulation {
-  /** Configuration */
   readonly config: SimulationConfig;
-  
-  /** Current state */
   readonly state: SimulationState;
   
-  /**
-   * Initialize/reset the simulation
-   * @param ctx Canvas 2D rendering context
-   */
   init(ctx: CanvasRenderingContext2D): void;
-  
-  /**
-   * Update simulation state
-   * @param deltaTime Time since last update in seconds
-   */
   update(deltaTime: number): void;
-  
-  /**
-   * Render current state to canvas
-   * @param ctx Canvas 2D rendering context
-   */
   render(ctx: CanvasRenderingContext2D): void;
-  
-  /**
-   * Start the simulation
-   */
   start(): void;
-  
-  /**
-   * Pause the simulation
-   */
   pause(): void;
-  
-  /**
-   * Reset to initial state
-   */
   reset(): void;
-  
-  /**
-   * Clean up resources
-   */
   destroy(): void;
+  
+  getStats?(): SimulationStat[];
 }
 
 /**

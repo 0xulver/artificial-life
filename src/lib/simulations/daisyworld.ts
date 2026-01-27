@@ -287,14 +287,13 @@ export function createDaisyworld(customConfig?: Partial<SimulationConfig>): Simu
           );
         }
       }
+    },
 
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-      ctx.fillRect(10, 90, 220, 70);
-      ctx.fillStyle = '#fff';
-      ctx.font = '14px monospace';
-      ctx.fillText(`Avg Temperature: ${averageTemperature.toFixed(1)}°C`, 20, 115);
-      ctx.fillText(`Solar Luminosity: ${solarLuminosity.toFixed(3)}`, 20, 135);
-      ctx.fillText(`Generation: ${state.generation}`, 20, 155);
+    getStats() {
+      return [
+        { label: 'Avg Temp', value: `${averageTemperature.toFixed(1)}°C` },
+        { label: 'Luminosity', value: solarLuminosity.toFixed(3) },
+      ];
     },
 
     start(): void {

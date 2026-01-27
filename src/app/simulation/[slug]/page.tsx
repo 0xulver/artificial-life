@@ -193,6 +193,16 @@ export default function SimulationPage({ params }: SimulationPageProps) {
           </div>
         </div>
 
+        {simulation.getStats && simulation.getStats().length > 0 && (
+          <div className="pointer-events-auto absolute left-6 top-20 flex flex-col gap-1 rounded-xl bg-black/60 px-4 py-3 text-xs text-white/90 backdrop-blur-md">
+            {simulation.getStats().map((stat, i) => (
+              <span key={i} className="font-mono">
+                {stat.label}: {stat.value}
+              </span>
+            ))}
+          </div>
+        )}
+
         <div className="pointer-events-auto flex items-end justify-between">
           <div className="flex flex-col gap-1 rounded-xl bg-black/60 p-3 text-xs text-white/90 backdrop-blur-md">
             <span className="font-mono">GEN: {simulation.state.generation}</span>

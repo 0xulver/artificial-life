@@ -369,23 +369,13 @@ export function createAvida(customConfig?: Partial<SimulationConfig>): Simulatio
           }
         }
       }
-      
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-      ctx.fillRect(25, 90, 160, 120);
-      
-      ctx.fillStyle = '#fff';
-      ctx.font = '12px monospace';
-      ctx.fillText(`Organisms: ${totalOrganisms}`, 35, 110);
-      ctx.fillText(`Generation: ${generation}`, 35, 130);
-      ctx.fillText(`Tasks Done: ${totalTasks}`, 35, 150);
-      
-      ctx.fillText('Task Colors:', 35, 175);
-      ctx.fillStyle = '#444'; ctx.fillRect(35, 180, 10, 10);
-      ctx.fillStyle = '#fff'; ctx.fillText('0', 50, 190);
-      ctx.fillStyle = '#4a4'; ctx.fillRect(70, 180, 10, 10);
-      ctx.fillStyle = '#fff'; ctx.fillText('1-2', 85, 190);
-      ctx.fillStyle = '#aa4'; ctx.fillRect(115, 180, 10, 10);
-      ctx.fillStyle = '#fff'; ctx.fillText('3+', 130, 190);
+    },
+
+    getStats() {
+      return [
+        { label: 'Organisms', value: totalOrganisms },
+        { label: 'Tasks Done', value: totalTasks },
+      ];
     },
 
     start(): void {

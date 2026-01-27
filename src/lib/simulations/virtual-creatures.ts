@@ -350,19 +350,16 @@ export function createVirtualCreatures(customConfig?: Partial<SimulationConfig>)
           ctx.restore();
         }
       }
-      
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-      ctx.fillRect(10, 10, 200, 80);
-      
-      ctx.fillStyle = '#fff';
-      ctx.font = '14px monospace';
-      ctx.fillText(`Generation: ${generation}`, 20, 30);
-      ctx.fillText(`Best Fitness: ${bestFitness.toFixed(0)}px`, 20, 50);
+    },
+
+    getStats() {
       const timeLeft = Math.max(0, (EVAL_TIME - (state.elapsedTime - evalStartTime)) / 1000);
-      ctx.fillText(`Time Left: ${timeLeft.toFixed(1)}s`, 20, 70);
-      
-      const currentBest = Math.max(...creatures.map(c => c.fitness));
-      ctx.fillText(`Current Best: ${currentBest.toFixed(0)}px`, 20, 90);
+      const currentBest = creatures.length > 0 ? Math.max(...creatures.map(c => c.fitness)) : 0;
+      return [
+        { label: 'Best Fitness', value: `${bestFitness.toFixed(0)}px` },
+        { label: 'Current Best', value: `${currentBest.toFixed(0)}px` },
+        { label: 'Time Left', value: `${timeLeft.toFixed(1)}s` },
+      ];
     },
 
     start(): void {
