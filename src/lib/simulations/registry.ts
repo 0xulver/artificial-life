@@ -23,6 +23,9 @@ import { createPhysarum } from './physarum';
 import { createSugarscape } from './sugarscape';
 import { createLangtonsLoops } from './langtons-loops';
 import { createGeneticAlgorithm } from './genetic-algorithm';
+import { createSmoothLife } from './smooth-life';
+import { createNeuralParticles } from './neural-particles';
+import { createBoxCar2D } from './boxcar2d';
 
 export const simulationRegistry: SimulationRegistryEntry[] = [
   {
@@ -232,6 +235,30 @@ export const simulationRegistry: SimulationRegistryEntry[] = [
     category: 'evolutionary',
     complexity: 'medium',
     factory: createGeneticAlgorithm,
+  },
+  {
+    id: 'smooth-life',
+    name: 'Smooth Life',
+    description: 'Continuous cellular automaton with smooth transitions',
+    category: 'cellular-automata',
+    complexity: 'medium',
+    factory: createSmoothLife,
+  },
+  {
+    id: 'neural-particles',
+    name: 'Neural Particle Automata',
+    description: 'Self-organizing particles with learned update rules',
+    category: 'agent-based',
+    complexity: 'hard',
+    factory: createNeuralParticles,
+  },
+  {
+    id: 'boxcar2d',
+    name: 'BoxCar2D',
+    description: 'Evolving vehicles with genetic algorithms',
+    category: 'evolutionary',
+    complexity: 'hard',
+    factory: createBoxCar2D,
   },
 ];
 
