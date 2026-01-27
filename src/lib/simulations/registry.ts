@@ -1,6 +1,7 @@
 import { SimulationRegistryEntry } from '@/lib/engine/types';
 import { createGameOfLife } from './game-of-life';
 import { createLenia } from './lenia';
+import { createBoids } from './boids';
 
 export const simulationRegistry: SimulationRegistryEntry[] = [
   {
@@ -18,6 +19,14 @@ export const simulationRegistry: SimulationRegistryEntry[] = [
     category: 'cellular-automata',
     complexity: 'medium',
     factory: createLenia,
+  },
+  {
+    id: 'boids',
+    name: 'Boids Flocking',
+    description: 'Emergent flocking behavior from three simple rules',
+    category: 'agent-based',
+    complexity: 'easy',
+    factory: createBoids,
   },
 ];
 
