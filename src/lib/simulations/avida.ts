@@ -350,40 +350,42 @@ export function createAvida(customConfig?: Partial<SimulationConfig>): Simulatio
       ctx.fillStyle = '#111';
       ctx.fillRect(0, 0, config.width, config.height);
       
+      const gridPixelSize = GRID_SIZE * CELL_SIZE;
+      const offsetX = (config.width - gridPixelSize) / 2;
+      const offsetY = (config.height - gridPixelSize) / 2;
+      
       for (let y = 0; y < GRID_SIZE; y++) {
         for (let x = 0; x < GRID_SIZE; x++) {
           const org = grid[y][x];
           if (org) {
             ctx.fillStyle = getOrganismColor(org);
-            ctx.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE - 1, CELL_SIZE - 1);
+            ctx.fillRect(offsetX + x * CELL_SIZE, offsetY + y * CELL_SIZE, CELL_SIZE - 1, CELL_SIZE - 1);
             
             if (org.tasksCompleted.size > 0) {
               const brightness = Math.min(1, org.energy / 100);
               ctx.fillStyle = `rgba(255, 255, 255, ${brightness * 0.3})`;
-              ctx.fillRect(x * CELL_SIZE + 2, y * CELL_SIZE + 2, CELL_SIZE - 5, CELL_SIZE - 5);
+              ctx.fillRect(offsetX + x * CELL_SIZE + 2, offsetY + y * CELL_SIZE + 2, CELL_SIZE - 5, CELL_SIZE - 5);
             }
           }
         }
       }
       
       ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-      ctx.fillRect(GRID_SIZE * CELL_SIZE + 10, 10, 180, 140);
+      ctx.fillRect(10, 90, 160, 120);
       
       ctx.fillStyle = '#fff';
       ctx.font = '12px monospace';
-      ctx.fillText(`Organisms: ${totalOrganisms}`, GRID_SIZE * CELL_SIZE + 20, 30);
-      ctx.fillText(`Generation: ${generation}`, GRID_SIZE * CELL_SIZE + 20, 50);
-      ctx.fillText(`Tasks Done: ${totalTasks}`, GRID_SIZE * CELL_SIZE + 20, 70);
+      ctx.fillText(`Organisms: ${totalOrganisms}`, 20, 110);
+      ctx.fillText(`Generation: ${generation}`, 20, 130);
+      ctx.fillText(`Tasks Done: ${totalTasks}`, 20, 150);
       
-      ctx.fillText('Task Colors:', GRID_SIZE * CELL_SIZE + 20, 95);
-      ctx.fillStyle = '#444'; ctx.fillRect(GRID_SIZE * CELL_SIZE + 20, 100, 10, 10);
-      ctx.fillStyle = '#fff'; ctx.fillText('0', GRID_SIZE * CELL_SIZE + 35, 110);
-      ctx.fillStyle = '#4a4'; ctx.fillRect(GRID_SIZE * CELL_SIZE + 50, 100, 10, 10);
-      ctx.fillStyle = '#fff'; ctx.fillText('1-2', GRID_SIZE * CELL_SIZE + 65, 110);
-      ctx.fillStyle = '#aa4'; ctx.fillRect(GRID_SIZE * CELL_SIZE + 95, 100, 10, 10);
-      ctx.fillStyle = '#fff'; ctx.fillText('3', GRID_SIZE * CELL_SIZE + 110, 110);
-      ctx.fillStyle = '#a44'; ctx.fillRect(GRID_SIZE * CELL_SIZE + 130, 100, 10, 10);
-      ctx.fillStyle = '#fff'; ctx.fillText('4+', GRID_SIZE * CELL_SIZE + 145, 110);
+      ctx.fillText('Task Colors:', 20, 175);
+      ctx.fillStyle = '#444'; ctx.fillRect(20, 180, 10, 10);
+      ctx.fillStyle = '#fff'; ctx.fillText('0', 35, 190);
+      ctx.fillStyle = '#4a4'; ctx.fillRect(55, 180, 10, 10);
+      ctx.fillStyle = '#fff'; ctx.fillText('1-2', 70, 190);
+      ctx.fillStyle = '#aa4'; ctx.fillRect(100, 180, 10, 10);
+      ctx.fillStyle = '#fff'; ctx.fillText('3+', 115, 190);
     },
 
     start(): void {
