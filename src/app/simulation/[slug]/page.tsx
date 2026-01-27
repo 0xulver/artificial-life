@@ -52,20 +52,34 @@ export default function SimulationPage({ params }: SimulationPageProps) {
 
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
+      const isNowFullscreen = !!document.fullscreenElement;
+      setIsFullscreen(isNowFullscreen);
+      sessionStorage.setItem('simulation-fullscreen', isNowFullscreen ? 'true' : 'false');
     };
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
+  useEffect(() => {
+    const shouldBeFullscreen = sessionStorage.getItem('simulation-fullscreen') === 'true';
+    if (shouldBeFullscreen && containerRef.current && !document.fullscreenElement) {
+      const timer = setTimeout(() => {
+        containerRef.current?.requestFullscreen().catch(() => {});
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [slug]);
+
   const toggleFullscreen = useCallback(() => {
     if (!containerRef.current) return;
     
     if (!document.fullscreenElement) {
+      sessionStorage.setItem('simulation-fullscreen', 'true');
       containerRef.current.requestFullscreen().catch((err) => {
         console.error('Failed to enter fullscreen:', err);
       });
     } else {
+      sessionStorage.setItem('simulation-fullscreen', 'false');
       document.exitFullscreen();
     }
   }, []);
