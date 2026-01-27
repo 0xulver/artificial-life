@@ -2,6 +2,7 @@ import { SimulationRegistryEntry } from '@/lib/engine/types';
 import { createGameOfLife } from './game-of-life';
 import { createLenia } from './lenia';
 import { createBoids } from './boids';
+import { createLangtonsAnt } from './langtons-ant';
 
 export const simulationRegistry: SimulationRegistryEntry[] = [
   {
@@ -27,6 +28,14 @@ export const simulationRegistry: SimulationRegistryEntry[] = [
     category: 'agent-based',
     complexity: 'easy',
     factory: createBoids,
+  },
+  {
+    id: 'langtons-ant',
+    name: "Langton's Ant",
+    description: 'Simple rules create complex emergent patterns and highways',
+    category: 'cellular-automata',
+    complexity: 'easy',
+    factory: createLangtonsAnt,
   },
 ];
 
