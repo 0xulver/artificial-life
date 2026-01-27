@@ -333,14 +333,14 @@ export function createBoxCar2D(customConfig?: Partial<SimulationConfig>): Simula
       ctx.restore();
       
       ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-      ctx.fillRect(10, 55, 200, 75);
+      ctx.fillRect(10, 90, 200, 75);
       ctx.fillStyle = '#fff';
       ctx.font = '14px monospace';
-      ctx.fillText(`Generation: ${generation}`, 20, 75);
+      ctx.fillText(`Generation: ${generation}`, 20, 110);
       const bestFitness = Math.max(...vehicles.map(v => v.body ? v.body.position.x - v.startX : 0));
-      ctx.fillText(`Best Distance: ${bestFitness.toFixed(0)}px`, 20, 95);
+      ctx.fillText(`Best Distance: ${bestFitness.toFixed(0)}px`, 20, 130);
       const timeLeft = Math.max(0, (GENERATION_TIME - (state.elapsedTime - generationStartTime)) / 1000);
-      ctx.fillText(`Time Left: ${timeLeft.toFixed(1)}s`, 20, 115);
+      ctx.fillText(`Time Left: ${timeLeft.toFixed(1)}s`, 20, 150);
     },
 
     start(): void {
