@@ -26,6 +26,8 @@ import { createGeneticAlgorithm } from './genetic-algorithm';
 import { createSmoothLife } from './smooth-life';
 import { createNeuralParticles } from './neural-particles';
 import { createBoxCar2D } from './boxcar2d';
+import { createAvida } from './avida';
+import { createVirtualCreatures } from './virtual-creatures';
 
 export const simulationRegistry: SimulationRegistryEntry[] = [
   {
@@ -259,6 +261,22 @@ export const simulationRegistry: SimulationRegistryEntry[] = [
     category: 'evolutionary',
     complexity: 'hard',
     factory: createBoxCar2D,
+  },
+  {
+    id: 'avida',
+    name: 'Avida-lite',
+    description: 'Digital evolution with self-replicating programs',
+    category: 'evolutionary',
+    complexity: 'hard',
+    factory: createAvida,
+  },
+  {
+    id: 'virtual-creatures',
+    name: 'Virtual Creatures',
+    description: 'Evolving morphology and neural control',
+    category: 'evolutionary',
+    complexity: 'hard',
+    factory: createVirtualCreatures,
   },
 ];
 
