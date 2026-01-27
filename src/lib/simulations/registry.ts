@@ -11,6 +11,7 @@ import { createWireworld } from './wireworld';
 import { createAntColony } from './ant-colony';
 import { createReactionDiffusion } from './reaction-diffusion';
 import { createPredatorPrey } from './predator-prey';
+import { createNeuralCA } from './neural-ca';
 
 export const simulationRegistry: SimulationRegistryEntry[] = [
   {
@@ -124,6 +125,14 @@ export const simulationRegistry: SimulationRegistryEntry[] = [
     category: 'evolutionary',
     complexity: 'medium',
     factory: createPredatorPrey,
+  },
+  {
+    id: 'neural-ca',
+    name: 'Neural Cellular Automata',
+    description: 'Self-organizing neural network that grows and regenerates patterns',
+    category: 'cellular-automata',
+    complexity: 'hard',
+    factory: createNeuralCA,
   },
 ];
 
