@@ -12,6 +12,10 @@ import { createAntColony } from './ant-colony';
 import { createReactionDiffusion } from './reaction-diffusion';
 import { createPredatorPrey } from './predator-prey';
 import { createNeuralCA } from './neural-ca';
+import { createElementaryCA } from './elementary-ca';
+import { createSandpile } from './sandpile';
+import { createSchelling } from './schelling';
+import { createFirefly } from './firefly';
 
 export const simulationRegistry: SimulationRegistryEntry[] = [
   {
@@ -133,6 +137,38 @@ export const simulationRegistry: SimulationRegistryEntry[] = [
     category: 'cellular-automata',
     complexity: 'hard',
     factory: createNeuralCA,
+  },
+  {
+    id: 'elementary-ca',
+    name: 'Elementary CA Explorer',
+    description: 'Explore all 256 elementary cellular automata rules including Rule 30, 90, 110',
+    category: 'cellular-automata',
+    complexity: 'easy',
+    factory: createElementaryCA,
+  },
+  {
+    id: 'sandpile',
+    name: 'Abelian Sandpile',
+    description: 'Self-organized criticality with cascading avalanches',
+    category: 'cellular-automata',
+    complexity: 'easy',
+    factory: createSandpile,
+  },
+  {
+    id: 'schelling',
+    name: 'Schelling Segregation',
+    description: 'Emergent segregation from mild individual preferences',
+    category: 'agent-based',
+    complexity: 'easy',
+    factory: createSchelling,
+  },
+  {
+    id: 'firefly',
+    name: 'Firefly Synchronization',
+    description: 'Coupled oscillators achieving spontaneous synchrony',
+    category: 'agent-based',
+    complexity: 'easy',
+    factory: createFirefly,
   },
 ];
 
