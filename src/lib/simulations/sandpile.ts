@@ -10,7 +10,7 @@ const DEFAULT_CONFIG: SimulationConfig = {
 };
 
 const CELL_SIZE = 4;
-const MAX_TOPPLE_ITERATIONS = 1000;
+const TOPPLES_PER_FRAME = 3;
 
 export function createSandpile(customConfig?: Partial<SimulationConfig>): Simulation {
   const config: SimulationConfig = { ...DEFAULT_CONFIG, ...customConfig };
@@ -55,42 +55,35 @@ export function createSandpile(customConfig?: Partial<SimulationConfig>): Simula
     }
   }
 
-  function runToppleCascade(): number {
-    let iterations = 0;
-    let hasUnstableCells = true;
+  function runToppleStep(): boolean {
+    let hasUnstableCells = false;
+    const changes: { row: number; col: number; delta: number }[] = [];
 
-    while (hasUnstableCells && iterations < MAX_TOPPLE_ITERATIONS) {
-      hasUnstableCells = false;
-      const changes: { row: number; col: number; delta: number }[] = [];
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        if (grid[row][col] >= 4) {
+          hasUnstableCells = true;
+          changes.push({ row, col, delta: -4 });
 
-      for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-          if (grid[row][col] >= 4) {
-            hasUnstableCells = true;
-            changes.push({ row, col, delta: -4 });
+          const neighbors = [
+            { r: (row - 1 + rows) % rows, c: col },
+            { r: (row + 1) % rows, c: col },
+            { r: row, c: (col - 1 + cols) % cols },
+            { r: row, c: (col + 1) % cols },
+          ];
 
-            const neighbors = [
-              { r: (row - 1 + rows) % rows, c: col },
-              { r: (row + 1) % rows, c: col },
-              { r: row, c: (col - 1 + cols) % cols },
-              { r: row, c: (col + 1) % cols },
-            ];
-
-            for (const n of neighbors) {
-              changes.push({ row: n.r, col: n.c, delta: 1 });
-            }
+          for (const n of neighbors) {
+            changes.push({ row: n.r, col: n.c, delta: 1 });
           }
         }
       }
-
-      for (const change of changes) {
-        grid[change.row][change.col] += change.delta;
-      }
-
-      iterations++;
     }
 
-    return iterations;
+    for (const change of changes) {
+      grid[change.row][change.col] += change.delta;
+    }
+
+    return hasUnstableCells;
   }
 
   function addRandomGrains(count: number): void {
@@ -123,7 +116,9 @@ export function createSandpile(customConfig?: Partial<SimulationConfig>): Simula
       const grainsToAdd = Math.floor(Math.random() * 3) + 1;
       addRandomGrains(grainsToAdd);
 
-      runToppleCascade();
+      for (let i = 0; i < TOPPLES_PER_FRAME; i++) {
+        if (!runToppleStep()) break;
+      }
 
       state.generation++;
     },
