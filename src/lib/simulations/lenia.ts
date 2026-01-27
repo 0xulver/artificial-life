@@ -23,12 +23,13 @@ const UPDATE_SHADER = `
   
   uniform sampler2D u_state;
   uniform vec2 u_resolution;
-  uniform float u_kernelRadius;
   uniform float u_mu;
   uniform float u_sigma;
   uniform float u_dt;
   
   varying vec2 v_texCoord;
+  
+  const float R = 12.0;
   
   float bell(float x, float m, float s) {
     float d = x - m;
@@ -44,13 +45,8 @@ const UPDATE_SHADER = `
     float sum = 0.0;
     float kernelSum = 0.0;
     
-    float R = u_kernelRadius;
-    int iR = int(R);
-    
-    for (int dy = -20; dy <= 20; dy++) {
-      for (int dx = -20; dx <= 20; dx++) {
-        if (abs(dx) > iR || abs(dy) > iR) continue;
-        
+    for (int dy = -12; dy <= 12; dy++) {
+      for (int dx = -12; dx <= 12; dx++) {
         float fdx = float(dx);
         float fdy = float(dy);
         float dist = sqrt(fdx * fdx + fdy * fdy);
@@ -304,14 +300,12 @@ export function createLenia(customConfig?: Partial<SimulationConfig>): Simulatio
         
         const stateLocation = gl.getUniformLocation(updateProgram, 'u_state');
         const resolutionLocation = gl.getUniformLocation(updateProgram, 'u_resolution');
-        const kernelRadiusLocation = gl.getUniformLocation(updateProgram, 'u_kernelRadius');
         const muLocation = gl.getUniformLocation(updateProgram, 'u_mu');
         const sigmaLocation = gl.getUniformLocation(updateProgram, 'u_sigma');
         const dtLocation = gl.getUniformLocation(updateProgram, 'u_dt');
         
         gl.uniform1i(stateLocation, 0);
         gl.uniform2f(resolutionLocation, simSize, simSize);
-        gl.uniform1f(kernelRadiusLocation, R);
         gl.uniform1f(muLocation, mu);
         gl.uniform1f(sigmaLocation, sigma);
         gl.uniform1f(dtLocation, 1.0 / T);
