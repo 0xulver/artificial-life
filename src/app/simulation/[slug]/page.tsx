@@ -1,9 +1,9 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { SimulationCanvas } from '@/components/SimulationCanvas';
-import { getSimulationById } from '@/lib/simulations/registry';
+import { simulationRegistry, getSimulationById } from '@/lib/simulations/registry';
 import { use } from 'react';
 
 interface SimulationPageProps {
@@ -11,40 +11,26 @@ interface SimulationPageProps {
 }
 
 export default function SimulationPage({ params }: SimulationPageProps) {
+  const router = useRouter();
   const { slug } = use(params);
   const entry = getSimulationById(slug);
   const [key, setKey] = useState(0);
-  const [dimensions, setDimensions] = useState<{ width: number; height: number } | null>(null);
   const [, setTick] = useState(0);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const simulation = useMemo(() => {
-    if (!entry || !dimensions) return null;
-    return entry.factory({
-      width: dimensions.width,
-      height: dimensions.height,
-    });
-  }, [entry, key, dimensions]);
+    if (!entry) return null;
+    return entry.factory();
+  }, [entry, key]);
 
-  // Force re-render for stats update
+  const hasMultipleSimulations = simulationRegistry.length > 1;
+
   useEffect(() => {
     if (!simulation?.state.running) return;
     let frameId: number;
     let lastTime = 0;
     const loop = (time: number) => {
-      if (time - lastTime > 100) { // Throttle to 10fps for UI updates
+      if (time - lastTime > 100) {
         setTick((t) => t + 1);
         lastTime = time;
       }
@@ -54,14 +40,25 @@ export default function SimulationPage({ params }: SimulationPageProps) {
     return () => cancelAnimationFrame(frameId);
   }, [simulation, simulation?.state.running]);
 
+  useEffect(() => {
+    const handleClickOutside = () => setDropdownOpen(false);
+    if (dropdownOpen) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [dropdownOpen]);
+
   if (!entry) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-black text-white">
         <div className="text-center">
           <h1 className="mb-4 text-2xl font-bold">Simulation not found</h1>
-          <Link href="/" className="text-green-400 hover:underline">
-            Back to home
-          </Link>
+          <button 
+            onClick={() => router.push(`/simulation/${simulationRegistry[0]?.id}`)}
+            className="text-green-400 hover:underline"
+          >
+            Go to first simulation
+          </button>
         </div>
       </div>
     );
@@ -71,9 +68,7 @@ export default function SimulationPage({ params }: SimulationPageProps) {
     return <div className="min-h-screen w-screen bg-black" />;
   }
 
-  const handleReset = () => {
-    setKey((k) => k + 1);
-  };
+  const handleReset = () => setKey((k) => k + 1);
 
   const handleToggle = () => {
     if (simulation.state.running) {
@@ -83,24 +78,68 @@ export default function SimulationPage({ params }: SimulationPageProps) {
     }
   };
 
+  const handleSimulationChange = (id: string) => {
+    setDropdownOpen(false);
+    router.push(`/simulation/${id}`);
+  };
+
   return (
     <div className="group relative h-screen w-screen overflow-hidden bg-black text-white">
       <div className="absolute inset-0 z-0">
-        <SimulationCanvas key={key} simulation={simulation} className="block" />
+        <SimulationCanvas key={key} simulation={simulation} fullscreen />
       </div>
 
       <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-between p-6 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
         <div className="pointer-events-auto flex items-start justify-between">
-          <Link
-            href="/"
-            className="flex items-center gap-2 rounded-full bg-black/60 px-4 py-2 text-sm text-white backdrop-blur-md transition-colors hover:bg-white/20"
-          >
-            <span>←</span>
-            <span className="sr-only">Back</span>
-          </Link>
+          {hasMultipleSimulations ? (
+            <div className="relative">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDropdownOpen(!dropdownOpen);
+                }}
+                className="flex items-center gap-2 rounded-full bg-black/60 px-4 py-2 text-sm text-white backdrop-blur-md transition-colors hover:bg-white/20"
+              >
+                <span>{entry.name}</span>
+                <svg
+                  className={`h-4 w-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {dropdownOpen && (
+                <div className="absolute left-0 top-full mt-2 min-w-[200px] rounded-xl bg-black/80 p-2 backdrop-blur-md">
+                  {simulationRegistry.map((sim) => (
+                    <button
+                      key={sim.id}
+                      onClick={() => handleSimulationChange(sim.id)}
+                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-white/10 ${
+                        sim.id === slug ? 'bg-white/10 text-white' : 'text-white/70'
+                      }`}
+                    >
+                      <span className="flex-1">{sim.name}</span>
+                      {sim.id === slug && (
+                        <span className="h-2 w-2 rounded-full bg-green-400" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="rounded-xl bg-black/60 px-4 py-2 backdrop-blur-md">
+              <h1 className="text-sm font-medium text-white">{entry.name}</h1>
+            </div>
+          )}
 
           <div className="rounded-xl bg-black/60 px-4 py-2 backdrop-blur-md">
-            <h1 className="text-sm font-medium text-white">{entry.name}</h1>
+            <span className="text-xs font-medium uppercase tracking-wider text-white/60">
+              {entry.category}
+            </span>
           </div>
         </div>
 
