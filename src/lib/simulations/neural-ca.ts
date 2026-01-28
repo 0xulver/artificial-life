@@ -14,6 +14,7 @@ const CHANNEL_N = 16;
 const MAX_ACTIVATION_VALUE = 10.0;
 const GRID_SIZE = 1024;
 const STEPS_PER_FRAME = 16;
+const ENABLE_GLOW = false;
 
 const PRETRAINED_MODEL = [
   {
@@ -204,6 +205,7 @@ const PROGRAMS: Record<string, string> = {
     }`,
   vis: `
     varying vec2 uv;
+    uniform float u_enableGlow;
     
     vec4 sampleState(vec2 xy) {
       return u_input_read(xy, 0.0);
@@ -224,8 +226,30 @@ const PROGRAMS: Record<string, string> = {
       vec4 rgba = bilinearSample(xy);
       
       vec3 color = 1.0 - rgba.a + rgba.rgb;
-      color = pow(color, vec3(0.95));
       
+      if (u_enableGlow > 0.5) {
+        float glowRadius = 2.0;
+        vec4 glow = vec4(0.0);
+        float totalWeight = 0.0;
+        for (float dy = -2.0; dy <= 2.0; dy += 1.0) {
+          for (float dx = -2.0; dx <= 2.0; dx += 1.0) {
+            float dist = length(vec2(dx, dy));
+            if (dist <= glowRadius) {
+              float weight = 1.0 - dist / glowRadius;
+              weight = weight * weight;
+              vec4 s = bilinearSample(xy + vec2(dx, dy));
+              glow += s.a * weight * vec4(s.rgb, 1.0);
+              totalWeight += weight;
+            }
+          }
+        }
+        glow /= totalWeight;
+        float alpha = rgba.a;
+        vec3 glowColor = glow.rgb * 0.4;
+        color = mix(color + glowColor * (1.0 - alpha), color, alpha * 0.8);
+      }
+      
+      color = pow(color, vec3(0.95));
       gl_FragColor = vec4(color, 1.0);
     }`
 };
@@ -455,6 +479,7 @@ export function createNeuralCA(customConfig?: Partial<SimulationConfig>): Simula
       
       const uniforms: Record<string, unknown> = {};
       setTensorUniforms(uniforms, 'u_input', stateBuf);
+      uniforms['u_enableGlow'] = ENABLE_GLOW ? 1.0 : 0.0;
       twgl.setUniforms(progs.vis, uniforms);
       twgl.drawBufferInfo(gl, quad);
       
