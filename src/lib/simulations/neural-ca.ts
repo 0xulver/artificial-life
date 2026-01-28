@@ -11,10 +11,10 @@ const DEFAULT_CONFIG: SimulationConfig = {
 };
 
 const CHANNEL_N = 16;
-const GRID_SIZE = 256;
-const STEPS_PER_FRAME = 8;
+const GRID_SIZE = 768;
+const STEPS_PER_FRAME = 32;
 const DROPOUT_FREQUENCY = 2;
-const SEED_RADIUS = 40;
+const SEED_RADIUS = 64;
 
 const PRETRAINED_MODEL = [
   {
