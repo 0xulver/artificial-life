@@ -13,7 +13,7 @@ const DEFAULT_CONFIG: SimulationConfig = {
 const CHANNEL_N = 16;
 const MAX_ACTIVATION_VALUE = 10.0;
 const GRID_SIZE = 512;
-const STEPS_PER_FRAME = 16;
+const STEPS_PER_FRAME = 32;
 const ENABLE_GLOW = false;
 
 const PRETRAINED_MODEL = [
