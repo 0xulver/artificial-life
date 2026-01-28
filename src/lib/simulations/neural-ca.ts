@@ -221,34 +221,12 @@ const PROGRAMS: Record<string, string> = {
     
     void main() {
       vec2 xy = vec2(uv.x, 1.0 - uv.y) * u_input.size;
-      
       vec4 rgba = bilinearSample(xy);
-      vec4 color = 1.0 - rgba.a + rgba;
       
-      float glowRadius = 2.0;
-      vec4 glow = vec4(0.0);
-      float totalWeight = 0.0;
-      for (float dy = -2.0; dy <= 2.0; dy += 1.0) {
-        for (float dx = -2.0; dx <= 2.0; dx += 1.0) {
-          float dist = length(vec2(dx, dy));
-          if (dist <= glowRadius) {
-            float weight = 1.0 - dist / glowRadius;
-            weight = weight * weight;
-            vec4 s = bilinearSample(xy + vec2(dx, dy));
-            glow += s.a * weight * vec4(s.rgb, 1.0);
-            totalWeight += weight;
-          }
-        }
-      }
-      glow /= totalWeight;
+      vec3 color = 1.0 - rgba.a + rgba.rgb;
+      color = pow(color, vec3(0.95));
       
-      float alpha = rgba.a;
-      vec3 glowColor = glow.rgb * 0.4;
-      color.rgb = mix(color.rgb + glowColor * (1.0 - alpha), color.rgb, alpha * 0.8);
-      
-      color.rgb = pow(color.rgb, vec3(0.95));
-      
-      gl_FragColor = vec4(color.rgb, 1.0);
+      gl_FragColor = vec4(color, 1.0);
     }`
 };
 
