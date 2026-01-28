@@ -386,7 +386,8 @@ export function createNeuralCA(customConfig?: Partial<SimulationConfig>): Simula
 
   function reset(): void {
     paint(0, 0, 10000, 'clear');
-    paint(GRID_SIZE / 2, GRID_SIZE / 2, 1, 'seed');
+    const seedRadius = Math.max(1, Math.floor(GRID_SIZE / 24));
+    paint(GRID_SIZE / 2, GRID_SIZE / 2, seedRadius, 'seed');
     state.generation = 0;
   }
 
