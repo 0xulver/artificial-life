@@ -12,7 +12,8 @@ const DEFAULT_CONFIG: SimulationConfig = {
 
 const CHANNEL_N = 16;
 const MAX_ACTIVATION_VALUE = 10.0;
-const GRID_SIZE = 96;
+const GRID_SIZE = 256;
+const STEPS_PER_FRAME = 4;
 
 const PRETRAINED_MODEL = [
   {
@@ -203,11 +204,51 @@ const PROGRAMS: Record<string, string> = {
     }`,
   vis: `
     varying vec2 uv;
+    
+    vec4 sampleState(vec2 xy) {
+      return u_input_read(xy, 0.0);
+    }
+    
+    vec4 bilinearSample(vec2 xy) {
+      vec2 f = fract(xy);
+      vec2 i = floor(xy);
+      vec4 a = sampleState(i);
+      vec4 b = sampleState(i + vec2(1.0, 0.0));
+      vec4 c = sampleState(i + vec2(0.0, 1.0));
+      vec4 d = sampleState(i + vec2(1.0, 1.0));
+      return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+    }
+    
     void main() {
       vec2 xy = vec2(uv.x, 1.0 - uv.y) * u_input.size;
-      vec4 rgba = u_input_read(xy, 0.0);
-      gl_FragColor = 1.0 - rgba.a + rgba;
-      gl_FragColor.a = 1.0;
+      
+      vec4 rgba = bilinearSample(xy);
+      vec4 color = 1.0 - rgba.a + rgba;
+      
+      float glowRadius = 2.0;
+      vec4 glow = vec4(0.0);
+      float totalWeight = 0.0;
+      for (float dy = -2.0; dy <= 2.0; dy += 1.0) {
+        for (float dx = -2.0; dx <= 2.0; dx += 1.0) {
+          float dist = length(vec2(dx, dy));
+          if (dist <= glowRadius) {
+            float weight = 1.0 - dist / glowRadius;
+            weight = weight * weight;
+            vec4 s = bilinearSample(xy + vec2(dx, dy));
+            glow += s.a * weight * vec4(s.rgb, 1.0);
+            totalWeight += weight;
+          }
+        }
+      }
+      glow /= totalWeight;
+      
+      float alpha = rgba.a;
+      vec3 glowColor = glow.rgb * 0.4;
+      color.rgb = mix(color.rgb + glowColor * (1.0 - alpha), color.rgb, alpha * 0.8);
+      
+      color.rgb = pow(color.rgb, vec3(0.95));
+      
+      gl_FragColor = vec4(color.rgb, 1.0);
     }`
 };
 
@@ -419,7 +460,9 @@ export function createNeuralCA(customConfig?: Partial<SimulationConfig>): Simula
     update(deltaTime: number): void {
       if (!state.running || !gl) return;
       state.elapsedTime += deltaTime;
-      step();
+      for (let i = 0; i < STEPS_PER_FRAME; i++) {
+        step();
+      }
     },
 
     render(ctx: CanvasRenderingContext2D): void {
