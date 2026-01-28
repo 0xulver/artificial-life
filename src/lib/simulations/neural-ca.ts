@@ -13,8 +13,9 @@ const DEFAULT_CONFIG: SimulationConfig = {
 const CHANNEL_N = 16;
 const MAX_ACTIVATION_VALUE = 10.0;
 const GRID_SIZE = 512;
-const STEPS_PER_FRAME = 32;
+const STEPS_PER_FRAME = 48;
 const ENABLE_GLOW = false;
+const DROPOUT_FREQUENCY = 4;
 
 const PRETRAINED_MODEL = [
   {
@@ -393,6 +394,8 @@ export function createNeuralCA(customConfig?: Partial<SimulationConfig>): Simula
     state.generation = 0;
   }
 
+  let stepCount = 0;
+
   function step(): void {
     if (!stateBuf || !newStateBuf || !perceptionBuf || !hiddenBuf || !updateBuf || !maskedUpdateBuf || !layerTex1 || !layerTex2) return;
     
@@ -407,18 +410,27 @@ export function createNeuralCA(customConfig?: Partial<SimulationConfig>): Simula
       u_weightTex: layerTex2.tex,
       u_weightCoefs: layerTex2.coefs
     });
-    runLayer('dropout', maskedUpdateBuf, {
-      u_input: updateBuf,
-      u_seed: Math.random() * 1000,
-      u_udpateProbability: 0.5
-    });
+    
+    const useDropout = (stepCount % DROPOUT_FREQUENCY) === 0;
+    let finalUpdate = updateBuf;
+    
+    if (useDropout) {
+      runLayer('dropout', maskedUpdateBuf, {
+        u_input: updateBuf,
+        u_seed: Math.random() * 1000,
+        u_udpateProbability: 0.5
+      });
+      finalUpdate = maskedUpdateBuf;
+    }
+    
     runLayer('update', newStateBuf, {
       u_input: stateBuf,
-      u_update: maskedUpdateBuf
+      u_update: finalUpdate
     });
     
     [stateBuf, newStateBuf] = [newStateBuf, stateBuf];
     state.generation++;
+    stepCount++;
   }
 
   return {
