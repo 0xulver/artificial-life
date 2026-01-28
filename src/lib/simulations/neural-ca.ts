@@ -7,15 +7,14 @@ const DEFAULT_CONFIG: SimulationConfig = {
   description: 'Self-organizing neural network that grows and regenerates patterns',
   width: 800,
   height: 600,
-  targetFPS: 60,
+  targetFPS: 30,
 };
 
 const CHANNEL_N = 16;
-const MAX_ACTIVATION_VALUE = 10.0;
-const GRID_SIZE = 512;
-const STEPS_PER_FRAME = 48;
-const ENABLE_GLOW = false;
-const DROPOUT_FREQUENCY = 4;
+const GRID_SIZE = 256;
+const STEPS_PER_FRAME = 8;
+const DROPOUT_FREQUENCY = 2;
+const SEED_RADIUS = 40;
 
 const PRETRAINED_MODEL = [
   {
@@ -36,9 +35,9 @@ const PRETRAINED_MODEL = [
   }
 ];
 
-const VS_CODE = `
-  attribute vec4 position;
-  varying vec2 uv;
+const VS_CODE = `#version 300 es
+  in vec4 position;
+  out vec2 uv;
   void main() {
     uv = position.xy * 0.5 + 0.5;
     gl_Position = position;
@@ -54,8 +53,11 @@ function defInput(name: string): string {
   `;
 }
 
-const PREFIX = `
+const PREFIX = `#version 300 es
   precision highp float;
+  in vec2 uv;
+  out vec4 fragColor;
+  
   struct Tensor {
     vec2 size;
     vec2 gridSize;
@@ -65,10 +67,7 @@ const PREFIX = `
   uniform Tensor u_output;
   
   vec4 _readUV(Tensor tensor, sampler2D tex, vec2 uv) {
-    vec4 v = texture2D(tex, uv);
-    vec2 p = tensor.packScaleBias;
-    v = tan((v - p.y) * p.x);
-    return v;
+    return texture(tex, uv);
   }
 
   vec4 _read(Tensor tensor, sampler2D tex, vec2 pos, float ch) {
@@ -90,9 +89,8 @@ const PREFIX = `
   }
 
   void setOutput(vec4 v) {
-    vec2 p = u_output.packScaleBias;
-    v = atan(v) / p.x + p.y;
-    gl_FragColor = v;
+    v = clamp(v, u_output.packScaleBias.x, u_output.packScaleBias.y);
+    fragColor = v;
   }
 
   ${defInput('u_input')}
@@ -142,11 +140,11 @@ const PROGRAMS: Record<string, string> = {
     uniform vec3 u_weightCoefs;
     const float MAX_PACKED_DEPTH = 32.0;
     vec4 readWeight(vec2 p) {
-      vec4 w = texture2D(u_weightTex, p);
+      vec4 w = texture(u_weightTex, p);
       return (w - u_weightCoefs.z) * u_weightCoefs.x;
     }
     vec4 readBias(vec2 p) {
-      vec4 w = texture2D(u_weightTex, p);
+      vec4 w = texture(u_weightTex, p);
       return (w - u_weightCoefs.z) * u_weightCoefs.y;
     }
     void main() {
@@ -169,7 +167,6 @@ const PROGRAMS: Record<string, string> = {
     }`,
   dropout: `
     uniform float u_seed, u_udpateProbability;
-    varying vec2 uv;
     float hash13(vec3 p3) {
       p3 = fract(p3 * .1031);
       p3 += dot(p3, p3.yzx + 33.33);
@@ -183,7 +180,6 @@ const PROGRAMS: Record<string, string> = {
     }`,
   update: `
     ${defInput('u_update')}
-    varying vec2 uv;
     void main() {
       vec2 xy = getOutputXY();
       float preMaxAlpha = 0.0, postMaxAlpha = 0.0;
@@ -205,7 +201,6 @@ const PROGRAMS: Record<string, string> = {
       setOutput(state + update);
     }`,
   vis: `
-    varying vec2 uv;
     uniform float u_enableGlow;
     
     vec4 sampleState(vec2 xy) {
@@ -225,7 +220,6 @@ const PROGRAMS: Record<string, string> = {
     void main() {
       vec2 xy = vec2(uv.x, 1.0 - uv.y) * u_input.size;
       vec4 rgba = bilinearSample(xy);
-      
       vec3 color = 1.0 - rgba.a + rgba.rgb;
       
       if (u_enableGlow > 0.5) {
@@ -251,7 +245,7 @@ const PROGRAMS: Record<string, string> = {
       }
       
       color = pow(color, vec3(0.95));
-      gl_FragColor = vec4(color, 1.0);
+      fragColor = vec4(color, 1.0);
     }`
 };
 
@@ -286,7 +280,7 @@ interface DenseInfo {
 export function createNeuralCA(customConfig?: Partial<SimulationConfig>): Simulation {
   const config: SimulationConfig = { ...DEFAULT_CONFIG, ...customConfig };
   
-  let gl: WebGLRenderingContext | null = null;
+  let gl: WebGL2RenderingContext | null = null;
   let glCanvas: HTMLCanvasElement | null = null;
   let progs: Record<string, twgl.ProgramInfo> = {};
   let quad: twgl.BufferInfo | null = null;
@@ -316,13 +310,21 @@ export function createNeuralCA(customConfig?: Partial<SimulationConfig>): Simula
     const texW = w * gridW;
     const texH = h * gridH;
 
-    const attachments = [{ minMag: gl.NEAREST }];
+    const gl2 = gl as WebGL2RenderingContext;
+    const attachments = [{ 
+      internalFormat: gl2.RGBA16F,
+      format: gl2.RGBA,
+      type: gl2.HALF_FLOAT,
+      minMag: gl2.NEAREST 
+    }];
     const fbi = twgl.createFramebufferInfo(gl, attachments, texW, texH);
     const tex = fbi.attachments[0] as WebGLTexture;
-    const C = Math.atan(MAX_ACTIVATION_VALUE);
-    let packScaleBias: [number, number] = [2.0 * C, 127.0 / 255.0];
+    
+    let packScaleBias: [number, number];
     if (activation === 'relu') {
-      packScaleBias = [C, 0.0];
+      packScaleBias = [0.0, 10.0];
+    } else {
+      packScaleBias = [-9.45, 10.62];
     }
     return {
       _type: 'tensor',
@@ -389,8 +391,7 @@ export function createNeuralCA(customConfig?: Partial<SimulationConfig>): Simula
 
   function reset(): void {
     paint(0, 0, 10000, 'clear');
-    const seedRadius = Math.max(1, Math.floor(GRID_SIZE / 24));
-    paint(GRID_SIZE / 2, GRID_SIZE / 2, seedRadius, 'seed');
+    paint(GRID_SIZE / 2, GRID_SIZE / 2, SEED_RADIUS, 'seed');
     state.generation = 0;
   }
 
@@ -442,9 +443,15 @@ export function createNeuralCA(customConfig?: Partial<SimulationConfig>): Simula
       glCanvas.width = GRID_SIZE;
       glCanvas.height = GRID_SIZE;
       
-      gl = glCanvas.getContext('webgl', { preserveDrawingBuffer: true });
+      gl = glCanvas.getContext('webgl2', { preserveDrawingBuffer: true });
       if (!gl) {
-        console.error('WebGL not supported');
+        console.error('WebGL2 not supported');
+        return;
+      }
+      
+      const extColorBufferFloat = gl.getExtension('EXT_color_buffer_float');
+      if (!extColorBufferFloat) {
+        console.error('EXT_color_buffer_float not supported');
         return;
       }
 
@@ -491,7 +498,7 @@ export function createNeuralCA(customConfig?: Partial<SimulationConfig>): Simula
       
       const uniforms: Record<string, unknown> = {};
       setTensorUniforms(uniforms, 'u_input', stateBuf);
-      uniforms['u_enableGlow'] = ENABLE_GLOW ? 1.0 : 0.0;
+      uniforms['u_enableGlow'] = 0.0;
       twgl.setUniforms(progs.vis, uniforms);
       twgl.drawBufferInfo(gl, quad);
       
